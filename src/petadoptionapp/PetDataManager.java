@@ -1,61 +1,41 @@
-// PetDataManager.java
 package petadoptionapp;
 
 import java.io.*;
 import java.util.ArrayList;
 
+// Encapsulation - Manages all pet data operations
 public class PetDataManager {
     private static final String FILE_NAME = "pets.dat";
 
-    /**
-     * Loads pet data from a file. If the file is not found or an error occurs during loading,
-     * it initializes the pet list with default pets and attempts to save them.
-     *
-     * @return An ArrayList of Pet objects loaded from file or default pets.
-     */
+    // Abstraction - Hides file loading complexity
     public static ArrayList<Pet> loadPets() {
         ArrayList<Pet> pets = new ArrayList<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
             pets = (ArrayList<Pet>) ois.readObject();
-            System.out.println("Pets loaded successfully from " + FILE_NAME);
         } catch (FileNotFoundException e) {
-            System.out.println("No existing pets file found. Initializing with default pets.");
-            pets = getDefaultPets(); // Initialize with default pets if file not found
-            savePets(pets); // Save defaults immediately
+            pets = getDefaultPets();
+            savePets(pets);
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error loading pets: " + e.getMessage());
-            e.printStackTrace(); // Print stack trace for debugging
-            pets = getDefaultPets(); // Fallback to default pets on error
-            savePets(pets); // IMPORTANT: Save defaults if loading failed to fix corrupted file for next run
+            pets = getDefaultPets();
+            savePets(pets);
         }
         return pets;
     }
 
-    /**
-     * Saves the current list of pets to a file.
-     *
-     * @param pets The ArrayList of Pet objects to be saved.
-     */
+    // Encapsulation - Private helper method for data persistence
     public static void savePets(ArrayList<Pet> pets) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             oos.writeObject(pets);
-            System.out.println("Pets saved successfully to " + FILE_NAME);
         } catch (IOException e) {
             System.err.println("Error saving pets: " + e.getMessage());
-            e.printStackTrace(); // Print stack trace for debugging
         }
     }
 
-    /**
-     * Provides a predefined list of default Cat and Dog objects.
-     * This method is called when no saved pet data is found.
-     *
-     * @return An ArrayList containing default Pet objects.
-     */
+    // Polymorphism - Returns ArrayList<Pet> containing both Cats and Dogs
     private static ArrayList<Pet> getDefaultPets() {
         ArrayList<Pet> defaultPets = new ArrayList<>();
 
-        // --- Male Cat Rescues ---
+        // Inheritance - Creating instances of subclasses (Cat/Dog)
         defaultPets.add(new Cat("Ash", 2, 0,
                 "Color: Blue\n" +
                 "Breed: British Shorthair\n" +
@@ -130,7 +110,6 @@ public class PetDataManager {
                 "provides him with constant love and support.",
                 "/resources/cat_riley.png", "Male"));
 
-        // --- Female Cat Rescues ---
         defaultPets.add(new Cat("Osang", 0, 3,
                 "Color: Ginger\n" +
                 "Breed: Persian Ragdoll\n" +
@@ -196,7 +175,6 @@ public class PetDataManager {
                 "to care for her special needs.",
                 "/resources/cat_siopao.png", "Female"));
 
-        // --- Male Dog Rescues ---
         defaultPets.add(new Dog("Alexis", 2, 0,
                 "Color: Brown\n" +
                 "Breed: Aspin\n" +
@@ -279,7 +257,6 @@ public class PetDataManager {
                 "and continues to show a loving spirit.",
                 "/resources/dog_frankie.png", "Male"));
 
-        // --- Female Dog Rescues ---
         defaultPets.add(new Dog("Alusha", 2, 0,
                 "Color: Light Brown\n" +
                 "Breed: Golden Retriever\n" +

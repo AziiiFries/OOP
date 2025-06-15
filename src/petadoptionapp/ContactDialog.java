@@ -8,13 +8,14 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.net.URL;
 
+// Inheritance - Extends JDialog
 public class ContactDialog extends JDialog {
-
     private Image backgroundImage;
     private Image secondImage;
     private boolean showingSecondImage = false;
     private JPanel contentPanel;
 
+    // Encapsulation - Private fields with public methods
     public ContactDialog(Frame owner, String contactNumber1, String contactNumber2, String contactEmail) {
         super(owner, "Contact Us", true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -22,6 +23,7 @@ public class ContactDialog extends JDialog {
         setUndecorated(true);
         setSize(700, 500);
 
+        // Abstraction - Hiding image loading complexity
         try {
             URL firstImageUrl = getClass().getResource("/resources/2.png");
             if (firstImageUrl != null) {
@@ -36,6 +38,7 @@ public class ContactDialog extends JDialog {
             e.printStackTrace();
         }
 
+        // Polymorphism - Custom JPanel with overridden paintComponent
         JPanel mainPanel = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -73,6 +76,7 @@ public class ContactDialog extends JDialog {
         closeButtonPanel.add(closeButton);
         mainPanel.add(closeButtonPanel, BorderLayout.NORTH);
 
+        // Polymorphism - Using MouseAdapter (abstract class implementation)
         mainPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -107,7 +111,6 @@ public class ContactDialog extends JDialog {
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
 
-        // Contact details panel
         JPanel detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
         detailsPanel.setOpaque(false);
@@ -115,7 +118,6 @@ public class ContactDialog extends JDialog {
         detailsPanel.setBorder(new EmptyBorder(20, 30, 20, 30));
         detailsPanel.setMaximumSize(new Dimension(350, Integer.MAX_VALUE));
 
-        // Phone numbers
         JLabel phoneLabel = new JLabel("Phone:");
         phoneLabel.setFont(new Font("Arial Narrow", Font.BOLD, 20));
         phoneLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -128,7 +130,6 @@ public class ContactDialog extends JDialog {
         number2Label.setFont(new Font("Arial Narrow", Font.PLAIN, 18));
         number2Label.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Email
         JLabel emailStaticLabel = new JLabel("Email:");
         emailStaticLabel.setFont(new Font("Arial Narrow", Font.BOLD, 20));
         emailStaticLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -140,6 +141,7 @@ public class ContactDialog extends JDialog {
         emailLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         emailLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // Polymorphism - MouseAdapter implementation
         emailLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -176,6 +178,7 @@ public class ContactDialog extends JDialog {
         toggleContactVisibility();
     }
 
+    // Encapsulation - Private helper method
     private void toggleContactVisibility() {
         contentPanel.setVisible(showingSecondImage);
     }

@@ -1,4 +1,3 @@
-// AdminPanel.java
 package petadoptionapp;
 
 import javax.swing.*;
@@ -14,38 +13,31 @@ import java.util.Map;
 import java.util.Objects;
 import javax.swing.plaf.basic.BasicButtonUI;
 
+// Inheritance - Extends JPanel to create custom panel
 public class AdminPanel extends JPanel {
-
     private AllPetsPanel allPetsPanel;
-
-    // Manage Pet fields (for both Add and Edit)
     private JTextField nameField;
     private JTextField ageField;
     private JTextField monthsField;
     private JTextField imagePathField;
     private JComboBox<String> genderComboBox;
     private JComboBox<String> typeComboBox;
-
     private JTextField colorField;
     private JTextField breedField;
     private JTextField healthStatusField;
     private JComboBox<String> spayedNeuteredComboBox;
     private JTextField vaccinationsDewormField;
-    private JTextArea descriptionArea; // Changed to JTextArea for multi-line description
-
+    private JTextArea descriptionArea;
     private JLabel managePetTitle;
     private JButton saveOrUpdateButton;
     private JButton clearFormButton;
-
-    private Pet currentEditingPet; // To hold the pet being edited
-
-    // Remove Pet fields
+    private Pet currentEditingPet;
     private DefaultListModel<String> petListModel;
     private JList<String> petJList;
     private JButton removePetButton;
-    private JButton editPetButton; // Re-added Edit button
+    private JButton editPetButton;
 
-    // Consistent color palette
+    // Encapsulation - Private fields with public methods to access them
     private static final Color BACKGROUND_LIGHT_GREY = Color.decode("#F2F4F8");
     private static final Color PANEL_WHITE = Color.WHITE;
     private static final Color BORDER_GREY = Color.decode("#E0E0E0");
@@ -54,15 +46,14 @@ public class AdminPanel extends JPanel {
     private static final Color PRIMARY_BLUE_HOVER = Color.decode("#4A699A");
     private static final Color DELETE_RED = Color.decode("#D9534F");
     private static final Color DELETE_RED_HOVER = Color.decode("#C9302C");
-    private static final Color CLEAR_BUTTON_COLOR = Color.decode("#6C757D"); // Grey for clear
-    private static final Color CLEAR_BUTTON_HOVER = Color.decode("#5A6268"); // Darker grey for hover
-
+    private static final Color CLEAR_BUTTON_COLOR = Color.decode("#6C757D");
+    private static final Color CLEAR_BUTTON_HOVER = Color.decode("#5A6268");
 
     public AdminPanel(AllPetsPanel allPetsPanel) {
         this.allPetsPanel = allPetsPanel;
         setBackground(BACKGROUND_LIGHT_GREY);
         setLayout(new BorderLayout(30, 30));
-        setBorder(new EmptyBorder(40, 60, 40, 60)); // Overall panel padding
+        setBorder(new EmptyBorder(40, 60, 40, 60));
 
         JLabel adminTitle = new JLabel("Admin Dashboard");
         adminTitle.setFont(new Font("SansSerif", Font.BOLD, 45));
@@ -70,18 +61,35 @@ public class AdminPanel extends JPanel {
         adminTitle.setHorizontalAlignment(SwingConstants.CENTER);
         add(adminTitle, BorderLayout.NORTH);
 
-        // Content panel now uses GridBagLayout for better control over sizing
         JPanel contentPanel = new JPanel(new GridBagLayout()); 
         contentPanel.setBackground(BACKGROUND_LIGHT_GREY);
 
-        // GridBagConstraints for contentPanel's sub-panels
         GridBagConstraints contentGbc = new GridBagConstraints();
-        contentGbc.fill = GridBagConstraints.BOTH; // Both panels fill available space
-        contentGbc.weightx = 0.5; // Each takes half horizontal space
-        contentGbc.weighty = 1.0; // Both can expand vertically
+        contentGbc.fill = GridBagConstraints.BOTH;
+        contentGbc.weightx = 0.5;
+        contentGbc.weighty = 1.0;
 
-        // --- Manage Pet Section (Add/Edit) ---
-        JPanel managePetWrapperPanel = new JPanel(new GridBagLayout()); // Wrapper to center managePetPanel
+        // Abstraction - Hiding complex panel creation details
+        JPanel managePetWrapperPanel = createManagePetPanel();
+        contentGbc.gridx = 0;
+        contentGbc.gridy = 0;
+        contentGbc.insets = new Insets(0, 0, 0, 20);
+        contentPanel.add(managePetWrapperPanel, contentGbc);
+
+        JPanel removePetWrapperPanel = createRemovePetPanel();
+        contentGbc.gridx = 1;
+        contentGbc.gridy = 0;
+        contentGbc.insets = new Insets(0, 20, 0, 0);
+        contentPanel.add(removePetWrapperPanel, contentGbc);
+
+        add(contentPanel, BorderLayout.CENTER);
+
+        clearManagePetForm(); 
+        updatePetListDisplay(); 
+    }
+
+    private JPanel createManagePetPanel() {
+        JPanel managePetWrapperPanel = new JPanel(new GridBagLayout());
         managePetWrapperPanel.setBackground(BACKGROUND_LIGHT_GREY);
 
         JPanel managePetPanel = new JPanel();
@@ -89,38 +97,29 @@ public class AdminPanel extends JPanel {
         managePetPanel.setBackground(PANEL_WHITE);
         managePetPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER_GREY, 1),
-                new EmptyBorder(30, 40, 30, 40) // Adjusted inner padding for more compact look and horizontal space
+                new EmptyBorder(30, 40, 30, 40)
         ));
-        managePetPanel.putClientProperty("JComponent.roundRectangle", true); 
-        managePetPanel.setMinimumSize(new Dimension(500, 750)); // Set a minimum size for the panel
+        managePetPanel.putClientProperty("JComponent.roundRectangle", true);
+        managePetPanel.setMinimumSize(new Dimension(500, 750));
 
-        // Default GridBagConstraints for form fields
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 0, 5, 0); // Reduced padding around each row in the form
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
-
-        managePetTitle = new JLabel("Add New Pet"); // Will be updated dynamically
-        managePetTitle.setFont(new Font("SansSerif", Font.BOLD, 32)); // Adjusted title font size
+        managePetTitle = new JLabel("Add New Pet");
+        managePetTitle.setFont(new Font("SansSerif", Font.BOLD, 32));
         managePetTitle.setForeground(TEXT_DARK_GREY);
         
-        // Specific GridBagConstraints for the title
         GridBagConstraints titleGbc = new GridBagConstraints();
         titleGbc.gridx = 0;
         titleGbc.gridy = 0;
-        titleGbc.gridwidth = 2; // Title spans both columns
+        titleGbc.gridwidth = 2;
         titleGbc.anchor = GridBagConstraints.CENTER;
-        titleGbc.insets = new Insets(25, 0, 25, 0); // Slightly reduced top and bottom inset for title
-        managePetPanel.add(managePetTitle, titleGbc); // Use specific GBC for title
+        titleGbc.insets = new Insets(25, 0, 25, 0);
+        managePetPanel.add(managePetTitle, titleGbc);
 
-
-        // Reset for form fields
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        int row = 1; // Starting row for form fields after the title
-
+        int row = 1;
         nameField = new JTextField(20);
         gbc.gridy = row; gbc.gridx = 0; 
         managePetPanel.add(createLabel("Name:"), gbc);
@@ -163,7 +162,6 @@ public class AdminPanel extends JPanel {
         managePetPanel.add(styleComboBox(typeComboBox), gbc);
         row++; gbc.gridx = 0; gbc.weightx = 0;
 
-        // Color and Breed on the same line
         colorField = new JTextField(8); 
         breedField = new JTextField(8); 
         
@@ -186,7 +184,6 @@ public class AdminPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 2; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL; 
         managePetPanel.add(colorBreedSubPanel, gbc);
         gbc.gridwidth = 1; gbc.weightx = 0; 
-
 
         healthStatusField = new JTextField(20);
         gbc.gridy = row; gbc.gridx = 0;
@@ -219,21 +216,18 @@ public class AdminPanel extends JPanel {
         managePetPanel.add(createLabel("Additional Description:"), gbc);
         gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(10, 0, 10, 0);
-        gbc.weighty = 1.0; // Allow description area to expand vertically
+        gbc.weighty = 1.0;
         managePetPanel.add(descriptionScrollPane, gbc);
         row++; gbc.gridx = 0; gbc.weightx = 0; gbc.fill = GridBagConstraints.HORIZONTAL; 
 
-
-        // Buttons for Save/Update and Clear
         JPanel actionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0)); 
         actionButtonsPanel.setOpaque(false);
         gbc.gridy = row++;
         gbc.gridx = 0;
         gbc.gridwidth = 2; 
         gbc.anchor = GridBagConstraints.CENTER;
-        // Increased bottom inset to prevent cutting, allowing more space for buttons
-        gbc.insets = new Insets(30, 0, 30, 0); // Increased bottom inset
-        gbc.weighty = 0; // Ensure this row doesn't try to take all remaining vertical space
+        gbc.insets = new Insets(30, 0, 30, 0);
+        gbc.weighty = 0;
         managePetPanel.add(actionButtonsPanel, gbc);
 
         saveOrUpdateButton = new JButton("Add Pet"); 
@@ -255,17 +249,14 @@ public class AdminPanel extends JPanel {
         wrapperGbc.anchor = GridBagConstraints.CENTER; 
         wrapperGbc.weightx = 1.0; 
         wrapperGbc.weighty = 1.0; 
-        wrapperGbc.fill = GridBagConstraints.BOTH; // Make managePetPanel fill its wrapper
+        wrapperGbc.fill = GridBagConstraints.BOTH;
         managePetWrapperPanel.add(managePetPanel, wrapperGbc);
         
-        // Add managePetWrapperPanel to contentPanel
-        contentGbc.gridx = 0;
-        contentGbc.gridy = 0;
-        contentGbc.insets = new Insets(0, 0, 0, 20); // Right padding between panels
-        contentPanel.add(managePetWrapperPanel, contentGbc);
+        return managePetWrapperPanel;
+    }
 
-        // --- Remove Pet Section ---
-        JPanel removePetWrapperPanel = new JPanel(new GridBagLayout()); // Wrapper to center removePetPanel
+    private JPanel createRemovePetPanel() {
+        JPanel removePetWrapperPanel = new JPanel(new GridBagLayout());
         removePetWrapperPanel.setBackground(BACKGROUND_LIGHT_GREY);
 
         JPanel removePetPanel = new JPanel();
@@ -273,31 +264,31 @@ public class AdminPanel extends JPanel {
         removePetPanel.setBackground(PANEL_WHITE);
         removePetPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER_GREY, 1),
-                new EmptyBorder(30, 40, 30, 40) // Adjusted inner padding to match the left panel for balance
+                new EmptyBorder(30, 40, 30, 40)
         ));
         removePetPanel.putClientProperty("JComponent.roundRectangle", true);
-        removePetPanel.setMinimumSize(new Dimension(500, 750)); // Set a minimum size for the panel
+        removePetPanel.setMinimumSize(new Dimension(500, 750));
 
-
-        JLabel removePetTitle = new JLabel("Manage Existing Pets"); // Changed title
-        removePetTitle.setFont(new Font("SansSerif", Font.BOLD, 32)); // Adjusted title font size
+        JLabel removePetTitle = new JLabel("Manage Existing Pets");
+        removePetTitle.setFont(new Font("SansSerif", Font.BOLD, 32));
         removePetTitle.setForeground(TEXT_DARK_GREY);
         removePetTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         removePetPanel.add(removePetTitle);
-        removePetPanel.add(Box.createVerticalStrut(35)); // Increased spacer after title for more room
+        removePetPanel.add(Box.createVerticalStrut(35));
 
         petListModel = new DefaultListModel<>();
         petJList = new JList<>(petListModel);
-        petJList.setFont(new Font("SansSerif", Font.PLAIN, 15)); // Adjusted font for list items
+        petJList.setFont(new Font("SansSerif", Font.PLAIN, 15));
         petJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        petJList.setFixedCellHeight(26); // Adjusted fixed cell height for better fit
-        petJList.setBorder(BorderFactory.createEmptyBorder(5,5,5,5)); // Padding inside list
+        petJList.setFixedCellHeight(26);
+        petJList.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         
+        // Polymorphism - Different rendering for selected vs unselected items
         petJList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setBorder(new EmptyBorder(5, 10, 5, 10)); // Padding for each list item
+                label.setBorder(new EmptyBorder(5, 10, 5, 10));
                 if (isSelected) {
                     label.setBackground(PRIMARY_BLUE_HOVER);
                     label.setForeground(Color.WHITE);
@@ -312,10 +303,10 @@ public class AdminPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(petJList);
         scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_GREY, 1));
         scrollPane.getViewport().setBackground(PANEL_WHITE);
-        scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the scroll pane
+        scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
         removePetPanel.add(scrollPane);
 
-        removePetPanel.add(Box.createVerticalStrut(35)); // Adjusted spacer before buttons for more room
+        removePetPanel.add(Box.createVerticalStrut(35));
 
         JPanel removeEditButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0)); 
         removeEditButtonsPanel.setOpaque(false);
@@ -330,7 +321,6 @@ public class AdminPanel extends JPanel {
         });
         removeEditButtonsPanel.add(removePetButton);
 
-        // Re-adding the "Edit Selected Pet" button
         editPetButton = new JButton("Edit Selected Pet");
         styleButton(editPetButton, PRIMARY_BLUE, PRIMARY_BLUE_HOVER);
         editPetButton.addActionListener(e -> editSelectedPet());
@@ -342,32 +332,21 @@ public class AdminPanel extends JPanel {
         wrapperGbcRemove.anchor = GridBagConstraints.CENTER; 
         wrapperGbcRemove.weightx = 1.0; 
         wrapperGbcRemove.weighty = 1.0; 
-        wrapperGbcRemove.fill = GridBagConstraints.BOTH; // Make removePetPanel fill its wrapper
+        wrapperGbcRemove.fill = GridBagConstraints.BOTH;
         removePetWrapperPanel.add(removePetPanel, wrapperGbcRemove);
 
-        // Add removePetWrapperPanel to contentPanel
-        contentGbc.gridx = 1;
-        contentGbc.gridy = 0;
-        contentGbc.insets = new Insets(0, 20, 0, 0); // Left padding between panels
-        contentPanel.add(removePetWrapperPanel, contentGbc);
-
-        add(contentPanel, BorderLayout.CENTER);
-
-        clearManagePetForm(); 
-        updatePetListDisplay(); 
+        return removePetWrapperPanel;
     }
 
-    // Helper method to create a JLabel with consistent styling for form fields
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("SansSerif", Font.PLAIN, 15)); // Adjusted label font size
+        label.setFont(new Font("SansSerif", Font.PLAIN, 15));
         label.setForeground(TEXT_DARK_GREY);
         return label;
     }
 
-    // Common style for JTextField
     private JTextField styleTextField(JTextField textField) {
-        textField.setFont(new Font("SansSerif", Font.PLAIN, 15)); // Adjusted text field font size
+        textField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         textField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER_GREY, 1),
                 new EmptyBorder(7, 12, 7, 12) 
@@ -376,23 +355,20 @@ public class AdminPanel extends JPanel {
         return textField;
     }
 
-    // Common style for JTextArea
     private JTextArea styleTextArea(JTextArea textArea, JScrollPane scrollPane) {
-        textArea.setFont(new Font("SansSerif", Font.PLAIN, 15)); // Adjusted text area font size
+        textArea.setFont(new Font("SansSerif", Font.PLAIN, 15));
         textArea.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER_GREY, 1),
                 new EmptyBorder(7, 12, 7, 12) 
         ));
         textArea.putClientProperty("JComponent.roundRectangle", true);
-        
         scrollPane.setBorder(BorderFactory.createEmptyBorder()); 
         scrollPane.getViewport().setBackground(PANEL_WHITE); 
         return textArea;
     }
 
-    // Common style for JComboBox
     private JComboBox<String> styleComboBox(JComboBox<String> comboBox) {
-        comboBox.setFont(new Font("SansSerif", Font.PLAIN, 15)); // Adjusted combo box font size
+        comboBox.setFont(new Font("SansSerif", Font.PLAIN, 15));
         comboBox.setBackground(PANEL_WHITE);
         comboBox.setForeground(TEXT_DARK_GREY);
         comboBox.setBorder(BorderFactory.createLineBorder(BORDER_GREY, 1));
@@ -416,13 +392,12 @@ public class AdminPanel extends JPanel {
         return comboBox;
     }
 
-    // Helper method to style buttons with rounded corners and hover effects
     private void styleButton(JButton button, Color bgColor, Color hoverColor) {
-        button.setFont(new Font("SansSerif", Font.BOLD, 17)); // Adjusted button font size
+        button.setFont(new Font("SansSerif", Font.BOLD, 17));
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(new EmptyBorder(12, 30, 12, 30)); // Adjusted padding
+        button.setBorder(new EmptyBorder(12, 30, 12, 30));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -491,7 +466,6 @@ public class AdminPanel extends JPanel {
                 return;
             }
 
-            // Construct the full description string from all fields
             StringBuilder fullDescription = new StringBuilder();
             if (!color.isEmpty()) fullDescription.append("Color: ").append(color).append("\n");
             if (!breed.isEmpty()) fullDescription.append("Breed: ").append(breed).append("\n");
@@ -503,26 +477,24 @@ public class AdminPanel extends JPanel {
             String finalDescription = fullDescription.toString().trim();
 
             if (currentEditingPet == null) {
-                // Add New Pet mode
+                // Polymorphism - Creating different pet types through common interface
                 Pet newPet;
                 if (Objects.equals(type, "Cat")) {
                     newPet = new Cat(name, age, months, finalDescription, imagePath, gender);
-                } else { // Dog
+                } else {
                     newPet = new Dog(name, age, months, finalDescription, imagePath, gender);
                 }
                 allPetsPanel.addPet(newPet);
                 JOptionPane.showMessageDialog(this, "Pet added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                // Edit Existing Pet mode
                 currentEditingPet.setName(name);
                 currentEditingPet.setAge(age);
                 currentEditingPet.setMonths(months);
                 currentEditingPet.setImagePath(imagePath);
                 currentEditingPet.setGender(gender);
-                // Type is not directly editable as it changes the class, which isn't supported without re-creating object
-                currentEditingPet.setDescription(finalDescription); // Update concatenated description
+                currentEditingPet.setDescription(finalDescription);
 
-                PetDataManager.savePets(allPetsPanel.getFullPetList()); // Save the entire updated list
+                PetDataManager.savePets(allPetsPanel.getFullPetList());
                 JOptionPane.showMessageDialog(this, "Pet updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             }
 
@@ -593,7 +565,6 @@ public class AdminPanel extends JPanel {
         }
     }
 
-    // Populate form fields with pet data
     private void populateManagePetForm(Pet pet) {
         nameField.setText(pet.getName());
         ageField.setText(String.valueOf(pet.getAge()));
@@ -602,7 +573,6 @@ public class AdminPanel extends JPanel {
         genderComboBox.setSelectedItem(pet.getGender());
         typeComboBox.setSelectedItem(pet instanceof Cat ? "Cat" : "Dog");
 
-        // Parse description string back into individual fields
         String description = pet.getDescription();
         Map<String, String> parsedDetails = parseDescription(description);
 
@@ -614,7 +584,6 @@ public class AdminPanel extends JPanel {
         descriptionArea.setText(parsedDetails.getOrDefault("Description", "")); 
     }
 
-    // Helper to parse the description string back into a map of details
     private Map<String, String> parseDescription(String description) {
         Map<String, String> details = new HashMap<>();
         String[] lines = description.split("\n");
@@ -632,26 +601,20 @@ public class AdminPanel extends JPanel {
             } else if (line.startsWith("Vaccinations & Deworm:")) {
                 details.put("Vaccinations & Deworm", line.substring("Vaccinations & Deworm:".length()).trim());
             } else if (line.startsWith("Description:")) {
-                // The actual "Description" part is often the last or general one
                 details.put("Description", line.substring("Description:".length()).trim());
             } else {
-                // If a line doesn't match a specific field, append it to the general description
                 if (remainingDescription.length() > 0) remainingDescription.append("\n");
                 remainingDescription.append(line);
             }
         }
-        // If there was any content not explicitly parsed into a field, put it into "Description"
         if (details.get("Description") == null && remainingDescription.length() > 0) {
              details.put("Description", remainingDescription.toString().trim());
         } else if (details.get("Description") != null && remainingDescription.length() > 0) {
-            // Append any unparsed lines to existing description if both exist
             details.put("Description", details.get("Description") + "\n" + remainingDescription.toString().trim());
         }
         return details;
     }
 
-
-    // Clear form fields and reset to Add New Pet mode
     private void clearManagePetForm() {
         currentEditingPet = null;
         managePetTitle.setText("Add New Pet");
@@ -672,7 +635,6 @@ public class AdminPanel extends JPanel {
         descriptionArea.setText("");
     }
 
-    // This method updates the JList with current pets from AllPetsPanel
     public void updatePetListDisplay() {
         petListModel.clear();
         for (Pet pet : allPetsPanel.getFullPetList()) {

@@ -1,58 +1,59 @@
-// Pet.java
 package petadoptionapp;
 
-import java.io.Serializable; // Import Serializable
+import java.io.Serializable;
 
-public abstract class Pet implements Serializable { // Implement Serializable
-	private static final long serialVersionUID = 1L; // Recommended for Serializable classes
+//Abstraction - Abstract base class for pets (implements Serializable)
+public abstract class Pet implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-	private String name;
-	private int age; // Age in years
-	private int months; // Age in months (additional detail)
-	private String description;
-	private String imagePath; // Path to the image resource
-	private String gender; // Added gender property
+    // Encapsulation - Private fields with public getters/setters
+    private String name;
+    private int age;
+    private int months;
+    private String description;
+    private String imagePath;
+    private String gender;
 
-	public Pet(String name, int age, String description, String imagePath, String gender) {
-		this(name, age, 0, description, imagePath, gender); // Call overloaded constructor with 0 months
-	}
+    // Polymorphism - Constructor overloading
+    public Pet(String name, int age, String description, String imagePath, String gender) {
+        this(name, age, 0, description, imagePath, gender);
+    }
 
-	public Pet(String name, int age, int months, String description, String imagePath, String gender) {
-		this.name = name;
-		this.age = age;
-		this.months = months;
-		this.description = description;
-		this.imagePath = imagePath;
-		this.gender = gender; // Initialize gender
-	}
+    public Pet(String name, int age, int months, String description, String imagePath, String gender) {
+        this.name = name;
+        this.age = age;
+        this.months = months;
+        this.description = description;
+        this.imagePath = imagePath;
+        this.gender = gender;
+    }
 
-	// Getters and setters (Encapsulation)
-	public String getName() {
-		return name;
-	}
+    // Encapsulation - Getters and setters
+    public String getName() {
+        return name;
+    }
 
-	public int getAge() {
-		return age;
-	}
+    public int getAge() {
+        return age;
+    }
 
-	public int getMonths() { // Getter for months
-		return months;
-	}
+    public int getMonths() {
+        return months;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getImagePath() {
-		return imagePath;
-	}
+    public String getImagePath() {
+        return imagePath;
+    }
 
-	public String getGender() { // Getter for gender
-		return gender;
-	}
+    public String getGender() {
+        return gender;
+    }
 
-	// You might need setters if you plan to edit pet details later
-	public void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -76,5 +77,6 @@ public abstract class Pet implements Serializable { // Implement Serializable
         this.gender = gender;
     }
 
-	public abstract void displayDetails();
+    // Abstraction - Abstract method (must be implemented by subclasses)
+    public abstract void displayDetails();
 }

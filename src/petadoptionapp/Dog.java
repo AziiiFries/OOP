@@ -1,19 +1,23 @@
 // Dog.java
 package petadoptionapp;
 
-import java.io.Serializable; // Import Serializable
+import java.io.Serializable;
 
-public class Dog extends Pet implements Serializable { // Implement Serializable
-	private static final long serialVersionUID = 1L; // Recommended for Serializable classes
+//Inheritance - Extends Pet class
+public class Dog extends Pet implements Serializable {
+	private static final long serialVersionUID = 1L;
 
+	// Polymorphism - Constructor overloading
 	public Dog(String name, int age, String description, String imagePath, String gender) {
 		super(name, age, description, imagePath, gender);
 	}
-
+	
+	// Polymorphism - Constructor overloading (different parameters)
 	public Dog(String name, int age, int months, String description, String imagePath, String gender) { // Overloaded
 		super(name, age, months, description, imagePath, gender);
 	}
-
+	
+	// Polymorphism - Method overriding
 	@Override
 	public void displayDetails() {
 		System.out.println("Dog: " + getName() + ", Age: " + getAge() + ", Description: " + getDescription() + ", Gender: " + getGender());
