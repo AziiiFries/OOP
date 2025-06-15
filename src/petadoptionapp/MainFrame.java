@@ -2,32 +2,28 @@
 package petadoptionapp;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer; // Import Consumer for the callback
+import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.basic.BasicButtonUI; // Import BasicButtonUI
+import javax.swing.plaf.basic.BasicButtonUI;
 
 public class MainFrame extends JFrame {
+    // Encapsulation - Private fields with public access methods
     private JPanel cardPanel;
     private CardLayout cardLayout;
-    private AllPetsPanel allPetsPanel; // Keep a reference to AllPetsPanel
-    private AdminPanel adminPanel; // Reference to AdminPanel
+    private AllPetsPanel allPetsPanel;
+    private AdminPanel adminPanel;
 
-    // Define card names as constants
-    public static final String HOME_PANEL = "Home"; // Updated to match your current card name
-    public static final String ALL_PETS_PANEL = "Adopt"; // Updated to match your current card name
-    public static final String ADMIN_PANEL = "Admin"; // Updated to match your current card name
-    public static final String ABOUT_PANEL = "About"; // Added for clarity
+    public static final String HOME_PANEL = "Home";
+    public static final String ALL_PETS_PANEL = "Adopt";
+    public static final String ADMIN_PANEL = "Admin";
+    public static final String ABOUT_PANEL = "About";
 
     public MainFrame() {
         setTitle("FurGivers Paws of Hope");
@@ -35,14 +31,11 @@ public class MainFrame extends JFrame {
         setMinimumSize(new Dimension(1024, 768));
         setPreferredSize(new Dimension(1200, 900));
         setLayout(new BorderLayout());
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Set frame to fullscreen
+        getContentPane().setBackground(Color.decode("#F2F4F8"));
+        getRootPane().setBorder(BorderFactory.createLineBorder(Color.decode("#E0E0E0"), 1));
 
-        getContentPane().setBackground(Color.decode("#F2F4F8")); // Consistent light grey background
-
-        getRootPane().setBorder(BorderFactory.createLineBorder(Color.decode("#E0E0E0"), 1)); // Subtle border
-
-        // Top Section: Logo and Navigation
         JPanel topWrapper = new JPanel(new BorderLayout());
         topWrapper.setBackground(Color.WHITE);
         topWrapper.setBorder(new EmptyBorder(20, 60, 20, 60));
@@ -55,13 +48,11 @@ public class MainFrame extends JFrame {
                 Image scaledLogo = originalIcon.getImage().getScaledInstance(300, 80, Image.SCALE_SMOOTH);
                 logoLabel = new JLabel(new ImageIcon(scaledLogo));
             } else {
-                System.err.println("Error: Logo image not found at /resources/1.png. Using text fallback.");
                 logoLabel = new JLabel("FurGivers Paws of Hope");
                 logoLabel.setFont(new Font("SansSerif", Font.BOLD, 36));
                 logoLabel.setForeground(Color.decode("#2B4576"));
             }
         } catch (Exception e) {
-            System.err.println("Exception loading logo image: " + e.getMessage() + ". Using text fallback.");
             logoLabel = new JLabel("FurGivers Paws of Hope");
             logoLabel.setFont(new Font("SansSerif", Font.BOLD, 36));
             logoLabel.setForeground(Color.decode("#2B4576"));
@@ -88,30 +79,27 @@ public class MainFrame extends JFrame {
         topWrapper.add(navButtonsPanel, BorderLayout.EAST);
         add(topWrapper, BorderLayout.NORTH);
 
-        // Main Content Area
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
         cardPanel.setBackground(Color.decode("#F2F4F8"));
         cardPanel.setBorder(new EmptyBorder(30, 80, 30, 80));
 
-        // When creating homePanel, pass the cardLayout and cardPanel reference
         JPanel homePanel = createHomePanel(cardLayout, cardPanel);
-        allPetsPanel = new AllPetsPanel(this); // Initialize AllPetsPanel
-        adminPanel = new AdminPanel(allPetsPanel); // Pass AllPetsPanel to AdminPanel
+        allPetsPanel = new AllPetsPanel(this);
+        adminPanel = new AdminPanel(allPetsPanel);
         JPanel aboutUsPanel = createAboutUsPanel();
 
         cardPanel.add(homePanel, HOME_PANEL);
         cardPanel.add(allPetsPanel, ALL_PETS_PANEL);
         cardPanel.add(aboutUsPanel, ABOUT_PANEL);
-        cardPanel.add(adminPanel, ADMIN_PANEL); // Add the AdminPanel
+        cardPanel.add(adminPanel, ADMIN_PANEL);
 
         add(cardPanel, BorderLayout.CENTER);
 
-        // Button Actions
         homeButton.addActionListener(e -> cardLayout.show(cardPanel, HOME_PANEL));
         findAPetButton.addActionListener(e -> {
             cardLayout.show(cardPanel, ALL_PETS_PANEL);
-            allPetsPanel.updatePetsDisplay(); // Ensure pets are updated when navigating to this panel
+            allPetsPanel.updatePetsDisplay();
         });
         aboutButton.addActionListener(e -> cardLayout.show(cardPanel, ABOUT_PANEL));
         contactButton.addActionListener(e -> {
@@ -132,30 +120,28 @@ public class MainFrame extends JFrame {
                     JOptionPane.showMessageDialog(this, "Cannot open browser. Please visit:\n" + DONATE_URL, "Browser Not Supported", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Error opening link: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // Use InputMap and ActionMap for global key binding for admin access
         InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = getRootPane().getActionMap();
 
         String adminKey = "adminShortcut";
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), adminKey);
         actionMap.put(adminKey, new AbstractAction() {
+            // Polymorphism - Overriding actionPerformed method
             @Override
             public void actionPerformed(ActionEvent e) {
                 AdminLoginDialog loginDialog = new AdminLoginDialog(MainFrame.this);
                 loginDialog.setVisible(true);
                 if (loginDialog.isLoggedIn()) {
-                    cardLayout.show(cardPanel, ADMIN_PANEL); // Show the AdminPanel on successful login
-                    adminPanel.updatePetListDisplay(); // Refresh pet list in admin panel
+                    cardLayout.show(cardPanel, ADMIN_PANEL);
+                    adminPanel.updatePetListDisplay();
                 }
             }
         });
 
-        // Footer
         JPanel footerPanel = new JPanel();
         footerPanel.setBackground(Color.decode("#F2F4F8"));
         footerPanel.setBorder(new EmptyBorder(15, 0, 15, 0));
@@ -166,16 +152,11 @@ public class MainFrame extends JFrame {
         footerPanel.add(footerLabel);
 
         add(footerPanel, BorderLayout.SOUTH);
-
-        // Initially show the home panel
         cardLayout.show(cardPanel, HOME_PANEL);
-        System.out.println("MainFrame: Initializing with " + HOME_PANEL);
-
         pack();
         setLocationRelativeTo(null);
     }
 
-    // Modified createHomePanel to include the ADOPT! button
     private JPanel createHomePanel(CardLayout cardLayout, JPanel cardPanel) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -198,7 +179,6 @@ public class MainFrame extends JFrame {
         panel.add(subTitle);
         panel.add(Box.createVerticalStrut(40));
 
-        // Featured Pet Previews
         JPanel previewGridPanel = new JPanel(new GridLayout(1, 3, 20, 0));
         previewGridPanel.setOpaque(false);
         previewGridPanel.setBorder(new EmptyBorder(0, 50, 0, 50));
@@ -208,19 +188,17 @@ public class MainFrame extends JFrame {
         previewGridPanel.add(createHomePetPreview("/resources/dog_brisket.png", "Hi I'm Brisket, will you Netflix and chill with me?"));
 
         panel.add(previewGridPanel);
-        panel.add(Box.createVerticalStrut(50)); // Spacer before the button
+        panel.add(Box.createVerticalStrut(50));
 
-        // ADOPT! Button
         JButton adoptButton = new JButton("ADOPT!");
-        adoptButton.setFont(new Font("SansSerif", Font.BOLD, 28)); // Larger, bolder font
+        adoptButton.setFont(new Font("SansSerif", Font.BOLD, 28));
         adoptButton.setForeground(Color.WHITE);
-        adoptButton.setBackground(Color.decode("#2B4576")); // Primary accent color
+        adoptButton.setBackground(Color.decode("#2B4576"));
         adoptButton.setFocusPainted(false);
         adoptButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        adoptButton.setBorder(new EmptyBorder(20, 60, 20, 60)); // Generous padding
-        adoptButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+        adoptButton.setBorder(new EmptyBorder(20, 60, 20, 60));
+        adoptButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Custom UI for rounded corners and shadow for the ADOPT! button
         adoptButton.setUI(new BasicButtonUI() {
             @Override
             public void paint(Graphics g, JComponent c) {
@@ -230,28 +208,25 @@ public class MainFrame extends JFrame {
                 JButton btn = (JButton) c;
                 int width = btn.getWidth();
                 int height = btn.getHeight();
-                int arc = 25; // More rounded corners
+                int arc = 25;
 
-                // Shadow effect
-                g2.setColor(new Color(0, 0, 0, 80)); // Darker, more visible shadow
-                g2.fillRoundRect(5, 5, width - 5, height - 5, arc, arc); // Offset shadow
+                g2.setColor(new Color(0, 0, 0, 80));
+                g2.fillRoundRect(5, 5, width - 5, height - 5, arc, arc);
 
-                // Button background
                 if (btn.getModel().isArmed()) {
-                    g2.setColor(Color.decode("#2B4576").darker()); // Darken on click
+                    g2.setColor(Color.decode("#2B4576").darker());
                 } else if (btn.getModel().isRollover()) {
-                    g2.setColor(Color.decode("#4A699A")); // Lighter on hover
+                    g2.setColor(Color.decode("#4A699A"));
                 } else {
                     g2.setColor(Color.decode("#2B4576"));
                 }
                 g2.fillRoundRect(0, 0, width, height, arc, arc);
 
-                super.paint(g2, c); // Paint the text
+                super.paint(g2, c);
                 g2.dispose();
             }
         });
 
-        // Hover effect for ADOPT! button (managed by custom UI, but listener ensures repaint)
         adoptButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -265,13 +240,12 @@ public class MainFrame extends JFrame {
         });
 
         adoptButton.addActionListener(e -> {
-            cardLayout.show(cardPanel, ALL_PETS_PANEL); // Switch to the "Adopt" panel
+            cardLayout.show(cardPanel, ALL_PETS_PANEL);
             if (allPetsPanel != null) {
-                allPetsPanel.updatePetsDisplay(); // Ensure pets are updated
+                allPetsPanel.updatePetsDisplay();
             }
         });
         panel.add(adoptButton);
-
 
         return panel;
     }
@@ -281,11 +255,9 @@ public class MainFrame extends JFrame {
         mainPanel.setBackground(Color.decode("#F2F4F8"));
         mainPanel.setBorder(new EmptyBorder(50, 50, 50, 50));
 
-        // Create image carousel panel for the left side
         JPanel carouselPanel = createImageCarousel();
         mainPanel.add(carouselPanel, BorderLayout.WEST);
 
-        // Create content panel for the right side
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(Color.decode("#F2F4F8"));
@@ -301,7 +273,7 @@ public class MainFrame extends JFrame {
         String htmlContent = "<html><body style='width: 100%; text-align: justify; font-family: sans-serif'>" +
                 "<div style='max-width: 600px'>" +
                 "FurGivers Paws of Hope is a non-profit organization dedicated to the welfare of animals. " +
-                "Established in 2000, our mission is to promote compassion and responsibility towards animals " +
+                "Established in 2023, our mission is to promote compassion and responsibility towards animals " +
                 "through education, advocacy, and direct animal rescue and rehabilitation.<br><br>" +
                 "We believe that every animal deserves a life free from cruelty, neglect, and abuse. " +
                 "Our programs include: <br>" +
@@ -317,8 +289,8 @@ public class MainFrame extends JFrame {
         content.setForeground(Color.decode("#333333"));
         content.setBackground(Color.decode("#F2F4F8"));
         content.setEditable(false);
-        content.setBorder(new EmptyBorder(0, 0, 0, 0)); // Remove default border
-        content.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true); // Use component font
+        content.setBorder(new EmptyBorder(0, 0, 0, 0));
+        content.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
 
         contentPanel.add(title);
         contentPanel.add(content);
@@ -340,19 +312,19 @@ public class MainFrame extends JFrame {
         panel.setMinimumSize(new Dimension(280, 400));
 
         panel.setOpaque(false);
-        panel.addMouseListener(new java.awt.event.MouseAdapter() {
+        panel.addMouseListener(new MouseAdapter() {
             private float scale = 1.0f;
             private Timer scaleTimer;
             private final int ANIMATION_STEPS = 5;
             private final int ANIMATION_DELAY = 20;
 
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            public void mouseEntered(MouseEvent evt) {
                 startScaleAnimation(1.03f);
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 startScaleAnimation(1.0f);
             }
 
@@ -377,51 +349,6 @@ public class MainFrame extends JFrame {
                 });
                 scaleTimer.start();
             }
-
-            public void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2d) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                int cx = getWidth() / 2;
-                int cy = getHeight() / 2;
-                g2.translate(cx, cy);
-                g2.scale(scale, scale);
-                g2.translate(-cx, -cy);
-
-                int arc = 15;
-                int width = getWidth();
-                int height = getHeight();
-
-                g2.setColor(new Color(0, 0, 0, 15));
-                g2.fill(new RoundRectangle2D.Double(2, 2, width - 2, height - 2, arc, arc));
-
-                g2.setColor(Color.WHITE);
-                g2.fillRoundRect(0, 0, width, height, arc, arc);
-
-                super.paintComponent(g2); // Paint child components
-                g2.dispose();
-            }
-
-            @Override // Changed from protected to public for proper override visibility
-            public void paintBorder(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                int cx = getWidth() / 2;
-                int cy = getHeight() / 2;
-                g2.translate(cx, cy);
-                g2.scale(scale, scale);
-                g2.translate(-cx, -cy);
-
-                int arc = 15;
-                int width = getWidth();
-                int height = getHeight();
-
-                g2.setColor(Color.decode("#E0E0E0"));
-                g2.setStroke(new BasicStroke(1));
-                g2.drawRoundRect(0, 0, width - 1, height - 1, arc, arc);
-                g2.dispose();
-            }
         });
 
         JLabel imageLabel = new JLabel();
@@ -440,14 +367,12 @@ public class MainFrame extends JFrame {
             imageLabel.setText("Image Error");
             imageLabel.setFont(new Font("SansSerif", Font.ITALIC, 12));
             imageLabel.setForeground(Color.GRAY);
-            System.err.println("Error loading preview image " + imagePath + ": " + e.getMessage());
         }
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         imageLabel.setBorder(new EmptyBorder(0, 0, 10, 0));
 
         JTextArea descArea = new JTextArea(description);
-        // Changed font for pet description previews
-        descArea.setFont(new Font("SansSerif", Font.BOLD, 16)); // Updated font: Roboto, Plain, Size 16
+        descArea.setFont(new Font("SansSerif", Font.BOLD, 16));
         descArea.setForeground(Color.decode("#333333"));
         descArea.setBackground(Color.WHITE);
         descArea.setLineWrap(true);
@@ -465,12 +390,18 @@ public class MainFrame extends JFrame {
 
     private JPanel createImageCarousel() {
         String[] imagePaths = {
-                "/resources/dog_alexis.png",
-                "/resources/dog_arian.png",
-                "/resources/dog_billie.png",
-                "/resources/dog_brix.png"
+            "/resources/dog_billie.png",
+            "/resources/cat_kitty.png",
+            "/resources/dog_brisket.png",
+            "/resources/cat_mimi.png",
+            "/resources/dog_arian.png",
+            "/resources/cat_ash.png",
+            "/resources/dog_frankie.png",
+            "/resources/cat_riley.png",
+            "/resources/dog_bruno.png",
+            "/resources/cat_siopao.png"
         };
-
+        
         ImageIcon[] images = new ImageIcon[imagePaths.length];
         for (int i = 0; i < imagePaths.length; i++) {
             try {
@@ -520,9 +451,9 @@ public class MainFrame extends JFrame {
         carouselPanel.add(imageLabel, BorderLayout.CENTER);
         carouselPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // animation
         AtomicInteger currentIndex = new AtomicInteger(0);
 
+        // Abstraction - Using Consumer interface to hide implementation details
         Consumer<Integer> updateCarousel = (newIndex) -> {
             imageLabel.setIcon(null);
             Timer timer = new Timer(5, null);
@@ -556,11 +487,10 @@ public class MainFrame extends JFrame {
             updateCarousel.accept(newIndex);
         });
 
-        // keyboard navigation
         carouselPanel.setFocusable(true);
-        carouselPanel.addKeyListener(new java.awt.event.KeyAdapter() { // Full class name
+        carouselPanel.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyPressed(java.awt.event.KeyEvent e) { // Full class name
+            public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
                     prevButton.doClick();
                 } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
@@ -569,18 +499,17 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Auto-advance timer
         Timer autoAdvanceTimer = new Timer(5000, e -> nextButton.doClick());
         autoAdvanceTimer.start();
 
-        carouselPanel.addMouseListener(new java.awt.event.MouseAdapter() { // Full class name
+        carouselPanel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) { // Full class name
+            public void mouseEntered(MouseEvent e) {
                 autoAdvanceTimer.stop();
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent e) { // Full class name
+            public void mouseExited(MouseEvent e) {
                 autoAdvanceTimer.restart();
             }
         });
@@ -595,16 +524,15 @@ public class MainFrame extends JFrame {
         button.setContentAreaFilled(false);
         button.setFocusPainted(false);
 
-        // Hover effects
-        button.addMouseListener(new java.awt.event.MouseAdapter() { // Full class name
+        button.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) { // Full class name
+            public void mouseEntered(MouseEvent e) {
                 button.setForeground(Color.BLUE);
                 button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent e) { // Full class name
+            public void mouseExited(MouseEvent e) {
                 button.setForeground(Color.BLACK);
             }
         });
@@ -653,6 +581,7 @@ public class MainFrame extends JFrame {
     }
 }
 
+// Inheritance - MenuButton extends JButton
 class MenuButton extends JButton {
     public MenuButton(String text) {
         super(text);
@@ -663,12 +592,12 @@ class MenuButton extends JButton {
         setBorderPainted(false);
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 setForeground(Color.decode("#2B4576"));
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 setForeground(Color.decode("#333333"));
             }
         });
